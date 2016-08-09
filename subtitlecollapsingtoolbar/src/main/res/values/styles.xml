@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="SubtitleCollapsingToolbar"
+        parent="@style/Widget.Design.CollapsingToolbar">
+        <item name="collapsedSubtitleColor">#cdcdcd</item>
+        <item name="collapsedSubtitleSize">10dp</item>
+        <item name="expandedSubtitleColor">#cdcdcd</item>
+        <item name="expandedSubtitleSize">15dp</item>
+    </style>
+    <style name="ActionBar.Title" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"/>
+</resources>

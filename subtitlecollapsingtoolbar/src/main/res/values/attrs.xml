@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="SubtitleCollapsingToolbar">
+        <attr name="collapsedSubtitleSize" format="dimension"/>
+        <attr name="collapsedSubtitleColor"  format="color"/>
+        <attr name="expandedSubtitleColor" format="color"/>
+        <attr name="expandedSubtitleSize" format="dimension"/>
+        <attr name="subtitle" format="string"/>
+    </declare-styleable>
+</resources>
