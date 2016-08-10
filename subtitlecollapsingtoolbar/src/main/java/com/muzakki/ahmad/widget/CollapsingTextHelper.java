@@ -108,10 +108,10 @@ final class CollapsingTextHelper {
     private float mExpandedSubSize = 15;
     private int mExpandedSubColor;
 
-    private float mCollapsedSubSize = 10;
+    private float mCollapsedSubSize = 15;
     private int mCollapsedSubColor;
     private float mCurrentSubSize;
-    private float mSubScale;
+    private float mCurrentSubScale;
 
 
     public CollapsingTextHelper(View view) {
@@ -286,8 +286,7 @@ final class CollapsingTextHelper {
         a.recycle();
     }
 
-
-    public void setExpandedSubAppearance(int resId) {
+    void setExpandedSubAppearance(int resId) {
         TypedArray a = mView.getContext().obtainStyledAttributes(resId,
                 R.styleable.SubtitleCollapsingToolbar);
         mExpandedSubSize = a.getDimensionPixelSize(
@@ -381,6 +380,9 @@ final class CollapsingTextHelper {
         setInterpolatedTextSize(lerp(mExpandedTextSize, mCollapsedTextSize,
                 fraction, mTextSizeInterpolator));
 
+        setInterpolatedSubSize(lerp(mExpandedSubSize, mCollapsedSubSize,
+                fraction, mTextSizeInterpolator));
+
         if (mCollapsedTextColor != mExpandedTextColor) {
             // If the collapsed and expanded text colors are different, blend them based on the
             // fraction
@@ -451,7 +453,6 @@ final class CollapsingTextHelper {
         if (mTextToDraw != null && mDrawTitle) {
             float x = mCurrentDrawX;
             float y = mCurrentDrawY;
-
             final boolean drawTexture = mUseTexture && mExpandedTitleTexture != null;
 
             final float ascent;
@@ -474,10 +475,11 @@ final class CollapsingTextHelper {
                 y += ascent;
             }
 
+            /*
             if (mScale != 1f) {
                 canvas.scale(mScale, mScale, x, y);
             }
-
+*/
             if (drawTexture) {
                 // If we should use a texture, draw it instead of text
                 canvas.drawBitmap(mExpandedTitleTexture, x, y, mTexturePaint);
@@ -508,6 +510,12 @@ final class CollapsingTextHelper {
             // Make sure we have an expanded texture if needed
             ensureExpandedTexture();
         }
+
+        ViewCompat.postInvalidateOnAnimation(mView);
+    }
+
+    private void setInterpolatedSubSize(float textSize) {
+        calculateUsingSubSize(textSize);
 
         ViewCompat.postInvalidateOnAnimation(mView);
     }
@@ -577,7 +585,6 @@ final class CollapsingTextHelper {
         if (isClose(textSize, mCollapsedSubSize)) {
             availableWidth = mCollapsedBounds.width();
             newTextSize = mCollapsedSubSize;
-            mSubScale = 1f;
             if (mCurrentTypeface != mCollapsedTypeface) {
                 mCurrentTypeface = mCollapsedTypeface;
                 updateDrawText = true;
@@ -589,14 +596,6 @@ final class CollapsingTextHelper {
                 mCurrentTypeface = mExpandedTypeface;
                 updateDrawText = true;
             }
-
-            if (isClose(textSize, mExpandedSubSize)) {
-                // If we're close to the expanded text size, snap to it and use a scale of 1
-                mSubScale = 1f;
-            } else {
-                // Else, we'll scale down from the expanded text size
-                mSubScale = textSize / mExpandedSubSize;
-            }
         }
 
         if (availableWidth > 0) {
@@ -605,12 +604,10 @@ final class CollapsingTextHelper {
             mBoundsChanged = false;
         }
 
-        if (mSubToDraw == null || updateDrawText) {
-            mSubPaint.setTextSize(mCurrentSubSize);
-            mSubPaint.setTypeface(mCurrentTypeface);
+        mSubPaint.setTextSize(textSize);
 
-            // Use linear text scaling if we're scaling the canvas
-            mSubPaint.setLinearText(mSubScale != 1f);
+        if(updateDrawText) {
+            mSubPaint.setTypeface(mCurrentTypeface);
 
             // If we don't currently have text to draw, or the text size has changed, ellipsize...
             final CharSequence title = TextUtils.ellipsize(mSub, mSubPaint,

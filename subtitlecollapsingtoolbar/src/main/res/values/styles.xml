@@ -5,7 +5,7 @@
         <item name="collapsedSubtitleColor">#fff</item>
         <item name="collapsedSubtitleSize">10dp</item>
         <item name="expandedSubtitleColor">#fff</item>
-        <item name="expandedSubtitleSize">15dp</item>
+        <item name="expandedSubtitleSize">20dp</item>
     </style>
     <style name="ActionBar.Title" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"/>
 </resources>
