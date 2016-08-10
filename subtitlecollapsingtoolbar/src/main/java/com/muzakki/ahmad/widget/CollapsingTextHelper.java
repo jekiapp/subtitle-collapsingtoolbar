@@ -41,7 +41,7 @@ final class CollapsingTextHelper {
     // by using our own texture
     private static final boolean USE_SCALING_TEXTURE = Build.VERSION.SDK_INT < 18;
 
-    private static final boolean DEBUG_DRAW = false;
+    private static final boolean DEBUG_DRAW = true;
     private static final Paint DEBUG_DRAW_PAINT;
     static {
         DEBUG_DRAW_PAINT = DEBUG_DRAW ? new Paint() : null;
@@ -112,6 +112,7 @@ final class CollapsingTextHelper {
     private int mCollapsedSubColor;
     private float mCurrentSubSize;
     private float mCurrentSubScale;
+    private float mSubScale;
 
 
     public CollapsingTextHelper(View view) {
@@ -475,17 +476,24 @@ final class CollapsingTextHelper {
                 y += ascent;
             }
 
-            /*
+            if (mSubScale != 1f) {
+                canvas.scale(mSubScale, mSubScale, x, y+10);
+            }
+            canvas.drawText(mSubToDraw,0,mSubToDraw.length(),x,y+10,mSubPaint);
+
+            canvas.restoreToCount(saveCount);
+
+
             if (mScale != 1f) {
                 canvas.scale(mScale, mScale, x, y);
             }
-*/
+
+
             if (drawTexture) {
                 // If we should use a texture, draw it instead of text
                 canvas.drawBitmap(mExpandedTitleTexture, x, y, mTexturePaint);
             } else {
                 canvas.drawText(mTextToDraw, 0, mTextToDraw.length(), x, y, mTextPaint);
-                canvas.drawText(mSubToDraw,0,mSubToDraw.length(),x,y+10,mSubPaint);
             }
         }
 
@@ -585,6 +593,7 @@ final class CollapsingTextHelper {
         if (isClose(textSize, mCollapsedSubSize)) {
             availableWidth = mCollapsedBounds.width();
             newTextSize = mCollapsedSubSize;
+            mSubScale = 1f;
             if (mCurrentTypeface != mCollapsedTypeface) {
                 mCurrentTypeface = mCollapsedTypeface;
                 updateDrawText = true;
@@ -596,6 +605,14 @@ final class CollapsingTextHelper {
                 mCurrentTypeface = mExpandedTypeface;
                 updateDrawText = true;
             }
+
+            if (isClose(textSize, mExpandedSubSize)) {
+                // If we're close to the expanded text size, snap to it and use a scale of 1
+                mSubScale = 1f;
+            } else {
+                // Else, we'll scale down from the expanded text size
+                mSubScale = textSize / mExpandedSubSize;
+            }
         }
 
         if (availableWidth > 0) {
@@ -604,10 +621,14 @@ final class CollapsingTextHelper {
             mBoundsChanged = false;
         }
 
-        mSubPaint.setTextSize(textSize);
+
 
         if(updateDrawText) {
             mSubPaint.setTypeface(mCurrentTypeface);
+            mSubPaint.setTextSize(mCurrentSubSize);
+
+            // Use linear text scaling if we're scaling the canvas
+            mSubPaint.setLinearText(mSubScale != 1f);
 
             // If we don't currently have text to draw, or the text size has changed, ellipsize...
             final CharSequence title = TextUtils.ellipsize(mSub, mSubPaint,
