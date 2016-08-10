@@ -144,7 +144,7 @@ public class CollapsingToolbarLayout extends FrameLayout {
 
         TypedArray a = context.obtainStyledAttributes(attrs,
                 R.styleable.CollapsingToolbarLayout, defStyleAttr,
-                com.muzakki.ahmad.widget.R.style.SubtitleCollapsingToolbar
+                R.style.SubtitleCollapsingToolbar
                 );
 
         mCollapsingTextHelper.setExpandedTextGravity(
@@ -178,6 +178,12 @@ public class CollapsingToolbarLayout extends FrameLayout {
                 R.styleable.CollapsingToolbarLayout_titleEnabled, true);
         setTitle(a.getText(R.styleable.CollapsingToolbarLayout_title));
 
+        TypedArray another = context.obtainStyledAttributes(attrs,
+                R.styleable.SubtitleCollapsingToolbar, defStyleAttr,
+                R.style.SubtitleCollapsingToolbar);
+        setSubtitle(another.getText(R.styleable.SubtitleCollapsingToolbar_subtitle).toString());
+
+
         // First load the default text appearances
         mCollapsingTextHelper.setExpandedTextAppearance(
                 R.style.TextAppearance_Design_CollapsingToolbar_Expanded);
@@ -205,6 +211,7 @@ public class CollapsingToolbarLayout extends FrameLayout {
         mToolbarId = a.getResourceId(R.styleable.CollapsingToolbarLayout_toolbarId, -1);
 
         a.recycle();
+        another.recycle();
 
         setWillNotDraw(false);
 
@@ -474,6 +481,10 @@ public class CollapsingToolbarLayout extends FrameLayout {
      */
     public void setTitle(@Nullable CharSequence title) {
         mCollapsingTextHelper.setText(title);
+    }
+
+    public void setSubtitle(@Nullable CharSequence subtitle){
+        mCollapsingTextHelper.setSubtitle(subtitle);
     }
 
     /**
