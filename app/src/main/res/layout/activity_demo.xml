@@ -17,7 +17,7 @@
             android:layout_height="match_parent"
             app:layout_scrollFlags="scroll|exitUntilCollapsed"
             app:title="Testing"
-            app:subtitle="ini subtitle cak"
+            app:subtitle="ini subtitle"
             >
 
             <android.support.v7.widget.Toolbar

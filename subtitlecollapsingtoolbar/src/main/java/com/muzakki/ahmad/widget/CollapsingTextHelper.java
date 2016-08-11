@@ -29,6 +29,7 @@ import android.support.v4.text.TextDirectionHeuristicsCompat;
 import android.support.v4.view.ViewCompat;
 import android.text.TextPaint;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.animation.Interpolator;
@@ -113,6 +114,10 @@ final class CollapsingTextHelper {
     private float mCurrentSubSize;
     private float mCurrentSubScale;
     private float mSubScale;
+    private float mCollapsedSubY;
+    private float mExpandedSubY;
+    private float mCurrentSubY;
+    private float mCurrentSubX;
 
 
     public CollapsingTextHelper(View view) {
@@ -183,6 +188,7 @@ final class CollapsingTextHelper {
     void setCollapsedBounds(int left, int top, int right, int bottom) {
         if (!rectEquals(mCollapsedBounds, left, top, right, bottom)) {
             mCollapsedBounds.set(left, top, right, bottom);
+            Log.i("collapsebounds",left+":"+top+":"+right+":"+bottom);
             mBoundsChanged = true;
             onBoundsChanged();
         }
@@ -378,6 +384,11 @@ final class CollapsingTextHelper {
         mCurrentDrawY = lerp(mExpandedDrawY, mCollapsedDrawY, fraction,
                 mPositionInterpolator);
 
+        mCurrentSubX = lerp(mExpandedDrawX, mCollapsedDrawX, fraction,
+                mPositionInterpolator);
+        mCurrentSubY = lerp(mExpandedSubY, mCollapsedSubY, fraction,
+                mPositionInterpolator);
+
         setInterpolatedTextSize(lerp(mExpandedTextSize, mCollapsedTextSize,
                 fraction, mTextSizeInterpolator));
 
@@ -419,9 +430,22 @@ final class CollapsingTextHelper {
 
         float textHeight = mTextPaint.descent() - mTextPaint.ascent();
         float textOffset = (textHeight / 2) - mTextPaint.descent();
-        mCollapsedDrawY = mCollapsedBounds.centerY() + textOffset;
-        mCollapsedDrawX = mCollapsedBounds.left;
+        if(mSub!=null){
+            float subHeight = mSubPaint.descent() - mSubPaint.ascent();
+            float subOffset = (subHeight / 2) - mSubPaint.descent();
+            float offset = ((mCollapsedBounds.height()-(textHeight+subHeight))/3);
 
+            mCollapsedDrawY = mCollapsedBounds.top+offset+textOffset;
+            mCollapsedSubY = mCollapsedBounds.top+(offset*2)+textHeight+subOffset;
+            Log.i("jeki","mCollapsedrawY1:"+mCollapsedDrawY);
+//            mCollapsedDrawY = mCollapsedBounds.centerY() + textOffset;
+//            mCollapsedSubY = mCollapsedDrawY+subOffset;
+            Log.i("jeki","mCollapsedrawY2:"+mCollapsedDrawY);
+            Log.i("jeki","height:"+mCollapsedBounds.height()+" center:"+mCollapsedBounds.centerY());
+        }else { // title only
+            mCollapsedDrawY = mCollapsedBounds.centerY() + textOffset;
+        }
+        mCollapsedDrawX = mCollapsedBounds.left;
 
 
         calculateUsingTextSize(mExpandedTextSize);
@@ -429,7 +453,17 @@ final class CollapsingTextHelper {
 
         textHeight = mTextPaint.descent() - mTextPaint.ascent();
         textOffset = (textHeight / 2) - mTextPaint.descent();
-        mExpandedDrawY = mExpandedBounds.centerY() + textOffset;
+        if(mSub!=null){
+            float subHeight = mSubPaint.descent() - mSubPaint.ascent();
+            float subOffset = (subHeight / 2) - mSubPaint.descent();
+            float offset = ((mExpandedBounds.height()-(textHeight+subHeight))/3);
+//            mExpandedDrawY = offset+textOffset;
+//            mExpandedSubY = (offset*2)+textHeight+subOffset;
+            mExpandedDrawY = mExpandedBounds.centerY() + textOffset;
+            mExpandedSubY = mExpandedDrawY+subHeight+subOffset;
+        }else { // title only
+            mExpandedDrawY = mExpandedBounds.centerY() + textOffset;
+        }
         mExpandedDrawX = mExpandedBounds.left;
 
         // The bounds have changed so we need to clear the texture
@@ -441,8 +475,7 @@ final class CollapsingTextHelper {
     private void interpolateBounds(float fraction) {
         mCurrentBounds.left = lerp(mExpandedBounds.left, mCollapsedBounds.left,
                 fraction, mPositionInterpolator);
-        mCurrentBounds.top = lerp(mExpandedDrawY, mCollapsedDrawY,
-                fraction, mPositionInterpolator);
+        mCurrentBounds.top = lerp(mExpandedDrawY, mCollapsedDrawY,fraction, mPositionInterpolator);
         mCurrentBounds.right = lerp(mExpandedBounds.right, mCollapsedBounds.right,
                 fraction, mPositionInterpolator);
         mCurrentBounds.bottom = lerp(mExpandedBounds.bottom, mCollapsedBounds.bottom,
@@ -454,6 +487,7 @@ final class CollapsingTextHelper {
         if (mTextToDraw != null && mDrawTitle) {
             float x = mCurrentDrawX;
             float y = mCurrentDrawY;
+            float subY = mCurrentSubY;
             final boolean drawTexture = mUseTexture && mExpandedTitleTexture != null;
 
             final float ascent;
@@ -476,18 +510,17 @@ final class CollapsingTextHelper {
                 y += ascent;
             }
 
-            if (mSubScale != 1f) {
-                canvas.scale(mSubScale, mSubScale, x, y+10);
+            if(mSubToDraw!=null) {
+                if (mSubScale != 1f) {
+                    canvas.scale(mSubScale, mSubScale, x, subY);
+                }
+                canvas.drawText(mSubToDraw, 0, mSubToDraw.length(), x, subY, mSubPaint);
+                canvas.restoreToCount(saveCount);
             }
-            canvas.drawText(mSubToDraw,0,mSubToDraw.length(),x,y+10,mSubPaint);
-
-            canvas.restoreToCount(saveCount);
-
 
             if (mScale != 1f) {
                 canvas.scale(mScale, mScale, x, y);
             }
-
 
             if (drawTexture) {
                 // If we should use a texture, draw it instead of text

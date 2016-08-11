@@ -40,6 +40,7 @@ import android.support.v4.view.WindowInsetsCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -181,7 +182,8 @@ public class CollapsingToolbarLayout extends FrameLayout {
         TypedArray another = context.obtainStyledAttributes(attrs,
                 R.styleable.SubtitleCollapsingToolbar, defStyleAttr,
                 R.style.SubtitleCollapsingToolbar);
-        setSubtitle(another.getText(R.styleable.SubtitleCollapsingToolbar_subtitle).toString());
+        if(another.hasValue(R.styleable.SubtitleCollapsingToolbar_subtitle))
+            setSubtitle(another.getText(R.styleable.SubtitleCollapsingToolbar_subtitle).toString());
 
 
         // First load the default text appearances
@@ -378,6 +380,7 @@ public class CollapsingToolbarLayout extends FrameLayout {
                 mToolbar.addView(mDummyView, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
             }
         }
+        Log.i("jeki","height update:"+mDummyView.getHeight());
     }
 
     @Override
@@ -393,8 +396,10 @@ public class CollapsingToolbarLayout extends FrameLayout {
         // Update the collapsed bounds by getting it's transformed bounds. This needs to be done
         // before the children are offset below
         if (mCollapsingTitleEnabled && mDummyView != null) {
+
             // We only draw the title if the dummy view is being displayed (Toolbar removes
             // views if there is no space)
+
             mDrawCollapsingTitle = ViewCompat.isAttachedToWindow(mDummyView)
                     && mDummyView.getVisibility() == VISIBLE;
 
