@@ -29,7 +29,6 @@ import android.support.v4.text.TextDirectionHeuristicsCompat;
 import android.support.v4.view.ViewCompat;
 import android.text.TextPaint;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.animation.Interpolator;
@@ -42,7 +41,7 @@ final class CollapsingTextHelper {
     // by using our own texture
     private static final boolean USE_SCALING_TEXTURE = Build.VERSION.SDK_INT < 18;
 
-    private static final boolean DEBUG_DRAW = true;
+    private static final boolean DEBUG_DRAW = false;
     private static final Paint DEBUG_DRAW_PAINT;
     static {
         DEBUG_DRAW_PAINT = DEBUG_DRAW ? new Paint() : null;
@@ -117,7 +116,6 @@ final class CollapsingTextHelper {
     private float mCollapsedSubY;
     private float mExpandedSubY;
     private float mCurrentSubY;
-    private float mCurrentSubX;
 
 
     public CollapsingTextHelper(View view) {
@@ -188,7 +186,6 @@ final class CollapsingTextHelper {
     void setCollapsedBounds(int left, int top, int right, int bottom) {
         if (!rectEquals(mCollapsedBounds, left, top, right, bottom)) {
             mCollapsedBounds.set(left, top, right, bottom);
-            Log.i("collapsebounds",left+":"+top+":"+right+":"+bottom);
             mBoundsChanged = true;
             onBoundsChanged();
         }
@@ -281,27 +278,18 @@ final class CollapsingTextHelper {
         recalculate();
     }
 
-    void setCollapsedSubAppearance(int resId) {
-        TypedArray a = mView.getContext().obtainStyledAttributes(resId,
-                R.styleable.SubtitleCollapsingToolbar);
-
-        mCollapsedSubSize = a.getDimensionPixelSize(
-                R.styleable.SubtitleCollapsingToolbar_collapsedSubtitleSize,(int) mCollapsedSubSize
-        );
-        mCollapsedSubColor = a.getInt(R.styleable.SubtitleCollapsingToolbar_collapsedSubtitleColor, mCollapsedSubColor);
-
-        a.recycle();
+    void setCollapsedSubAppearance(TypedArray style) {
+        mCollapsedSubSize = style.getDimensionPixelSize(
+                R.styleable.SubtitleCollapsingToolbar_collapsedSubtitleSize,(int) mCollapsedSubSize);
+        mCollapsedSubColor = style.getInt(
+                R.styleable.SubtitleCollapsingToolbar_collapsedSubtitleColor, mCollapsedSubColor);
     }
 
-    void setExpandedSubAppearance(int resId) {
-        TypedArray a = mView.getContext().obtainStyledAttributes(resId,
-                R.styleable.SubtitleCollapsingToolbar);
-        mExpandedSubSize = a.getDimensionPixelSize(
-                R.styleable.SubtitleCollapsingToolbar_expandedSubtitleSize,(int) mExpandedSubSize
-        );
-        mExpandedSubColor = a.getInt(R.styleable.SubtitleCollapsingToolbar_expandedSubtitleColor, mExpandedSubColor);
-
-        a.recycle();
+    void setExpandedSubAppearance(TypedArray style) {
+        mExpandedSubSize = style.getDimensionPixelSize(
+                R.styleable.SubtitleCollapsingToolbar_expandedSubtitleSize,(int) mExpandedSubSize);
+        mExpandedSubColor = style.getInt(R.styleable.SubtitleCollapsingToolbar_expandedSubtitleColor,
+                mExpandedSubColor);
     }
 
     private Typeface readFontFamilyTypeface(int resId) {
@@ -384,8 +372,6 @@ final class CollapsingTextHelper {
         mCurrentDrawY = lerp(mExpandedDrawY, mCollapsedDrawY, fraction,
                 mPositionInterpolator);
 
-        mCurrentSubX = lerp(mExpandedDrawX, mCollapsedDrawX, fraction,
-                mPositionInterpolator);
         mCurrentSubY = lerp(mExpandedSubY, mCollapsedSubY, fraction,
                 mPositionInterpolator);
 
@@ -429,19 +415,14 @@ final class CollapsingTextHelper {
         calculateUsingSubSize(mCollapsedSubSize);
 
         float textHeight = mTextPaint.descent() - mTextPaint.ascent();
-        float textOffset = (textHeight / 2) - mTextPaint.descent();
+        float textOffset = (textHeight / 2);
         if(mSub!=null){
             float subHeight = mSubPaint.descent() - mSubPaint.ascent();
             float subOffset = (subHeight / 2) - mSubPaint.descent();
             float offset = ((mCollapsedBounds.height()-(textHeight+subHeight))/3);
 
-            mCollapsedDrawY = mCollapsedBounds.top+offset+textOffset;
-            mCollapsedSubY = mCollapsedBounds.top+(offset*2)+textHeight+subOffset;
-            Log.i("jeki","mCollapsedrawY1:"+mCollapsedDrawY);
-//            mCollapsedDrawY = mCollapsedBounds.centerY() + textOffset;
-//            mCollapsedSubY = mCollapsedDrawY+subOffset;
-            Log.i("jeki","mCollapsedrawY2:"+mCollapsedDrawY);
-            Log.i("jeki","height:"+mCollapsedBounds.height()+" center:"+mCollapsedBounds.centerY());
+            mCollapsedDrawY = mCollapsedBounds.top+offset-mTextPaint.ascent();
+            mCollapsedSubY = mCollapsedBounds.top+(offset*2)+textHeight-mSubPaint.ascent();
         }else { // title only
             mCollapsedDrawY = mCollapsedBounds.centerY() + textOffset;
         }
@@ -452,15 +433,13 @@ final class CollapsingTextHelper {
         calculateUsingSubSize(mExpandedSubSize);
 
         textHeight = mTextPaint.descent() - mTextPaint.ascent();
-        textOffset = (textHeight / 2) - mTextPaint.descent();
+        textOffset = (textHeight / 2);
         if(mSub!=null){
             float subHeight = mSubPaint.descent() - mSubPaint.ascent();
-            float subOffset = (subHeight / 2) - mSubPaint.descent();
-            float offset = ((mExpandedBounds.height()-(textHeight+subHeight))/3);
-//            mExpandedDrawY = offset+textOffset;
-//            mExpandedSubY = (offset*2)+textHeight+subOffset;
+            float subOffset = (subHeight / 2);
+
             mExpandedDrawY = mExpandedBounds.centerY() + textOffset;
-            mExpandedSubY = mExpandedDrawY+subHeight+subOffset;
+            mExpandedSubY = mExpandedDrawY+subOffset-mSubPaint.ascent();
         }else { // title only
             mExpandedDrawY = mExpandedBounds.centerY() + textOffset;
         }

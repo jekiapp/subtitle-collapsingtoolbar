@@ -179,11 +179,11 @@ public class CollapsingToolbarLayout extends FrameLayout {
                 R.styleable.CollapsingToolbarLayout_titleEnabled, true);
         setTitle(a.getText(R.styleable.CollapsingToolbarLayout_title));
 
-        TypedArray another = context.obtainStyledAttributes(attrs,
+        TypedArray mStyle = context.obtainStyledAttributes(attrs,
                 R.styleable.SubtitleCollapsingToolbar, defStyleAttr,
                 R.style.SubtitleCollapsingToolbar);
-        if(another.hasValue(R.styleable.SubtitleCollapsingToolbar_subtitle))
-            setSubtitle(another.getText(R.styleable.SubtitleCollapsingToolbar_subtitle).toString());
+        if(mStyle.hasValue(R.styleable.SubtitleCollapsingToolbar_subtitle))
+            setSubtitle(mStyle.getText(R.styleable.SubtitleCollapsingToolbar_subtitle).toString());
 
 
         // First load the default text appearances
@@ -192,8 +192,8 @@ public class CollapsingToolbarLayout extends FrameLayout {
         mCollapsingTextHelper.setCollapsedTextAppearance(
                 R.style.TextAppearance_AppCompat_Widget_ActionBar_Title);
 
-        mCollapsingTextHelper.setCollapsedSubAppearance(R.style.SubtitleCollapsingToolbar);
-        mCollapsingTextHelper.setExpandedSubAppearance(R.style.SubtitleCollapsingToolbar);
+        mCollapsingTextHelper.setCollapsedSubAppearance(mStyle);
+        mCollapsingTextHelper.setExpandedSubAppearance(mStyle);
 
         // Now overlay any custom text appearances
         if (a.hasValue(R.styleable.CollapsingToolbarLayout_expandedTitleTextAppearance)) {
@@ -213,7 +213,7 @@ public class CollapsingToolbarLayout extends FrameLayout {
         mToolbarId = a.getResourceId(R.styleable.CollapsingToolbarLayout_toolbarId, -1);
 
         a.recycle();
-        another.recycle();
+        mStyle.recycle();
 
         setWillNotDraw(false);
 

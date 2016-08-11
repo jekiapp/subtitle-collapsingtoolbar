@@ -3,7 +3,7 @@
     <style name="SubtitleCollapsingToolbar"
         parent="@style/Widget.Design.CollapsingToolbar">
         <item name="collapsedSubtitleColor">#fff</item>
-        <item name="collapsedSubtitleSize">10dp</item>
+        <item name="collapsedSubtitleSize">13dp</item>
         <item name="expandedSubtitleColor">#fff</item>
         <item name="expandedSubtitleSize">20dp</item>
     </style>
