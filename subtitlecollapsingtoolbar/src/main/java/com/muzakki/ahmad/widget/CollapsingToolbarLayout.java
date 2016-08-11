@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
+ * Modified 2016 by Ahmad Muzakki (modifications are marked with comments)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +41,6 @@ import android.support.v4.view.WindowInsetsCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -179,12 +179,13 @@ public class CollapsingToolbarLayout extends FrameLayout {
                 R.styleable.CollapsingToolbarLayout_titleEnabled, true);
         setTitle(a.getText(R.styleable.CollapsingToolbarLayout_title));
 
+	// begin modification
         TypedArray mStyle = context.obtainStyledAttributes(attrs,
                 R.styleable.SubtitleCollapsingToolbar, defStyleAttr,
                 R.style.SubtitleCollapsingToolbar);
         if(mStyle.hasValue(R.styleable.SubtitleCollapsingToolbar_subtitle))
             setSubtitle(mStyle.getText(R.styleable.SubtitleCollapsingToolbar_subtitle).toString());
-
+	// end modification
 
         // First load the default text appearances
         mCollapsingTextHelper.setExpandedTextAppearance(
@@ -192,8 +193,10 @@ public class CollapsingToolbarLayout extends FrameLayout {
         mCollapsingTextHelper.setCollapsedTextAppearance(
                 R.style.TextAppearance_AppCompat_Widget_ActionBar_Title);
 
+	// begin modification
         mCollapsingTextHelper.setCollapsedSubAppearance(mStyle);
         mCollapsingTextHelper.setExpandedSubAppearance(mStyle);
+	// end
 
         // Now overlay any custom text appearances
         if (a.hasValue(R.styleable.CollapsingToolbarLayout_expandedTitleTextAppearance)) {
@@ -221,7 +224,7 @@ public class CollapsingToolbarLayout extends FrameLayout {
                 new android.support.v4.view.OnApplyWindowInsetsListener() {
                     @Override
                     public WindowInsetsCompat onApplyWindowInsets(View v,
-                                                                  WindowInsetsCompat insets) {
+                            WindowInsetsCompat insets) {
                         return setWindowInsets(insets);
                     }
                 });
@@ -380,7 +383,6 @@ public class CollapsingToolbarLayout extends FrameLayout {
                 mToolbar.addView(mDummyView, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
             }
         }
-        Log.i("jeki","height update:"+mDummyView.getHeight());
     }
 
     @Override
@@ -396,10 +398,8 @@ public class CollapsingToolbarLayout extends FrameLayout {
         // Update the collapsed bounds by getting it's transformed bounds. This needs to be done
         // before the children are offset below
         if (mCollapsingTitleEnabled && mDummyView != null) {
-
             // We only draw the title if the dummy view is being displayed (Toolbar removes
             // views if there is no space)
-
             mDrawCollapsingTitle = ViewCompat.isAttachedToWindow(mDummyView)
                     && mDummyView.getVisibility() == VISIBLE;
 
@@ -488,9 +488,11 @@ public class CollapsingToolbarLayout extends FrameLayout {
         mCollapsingTextHelper.setText(title);
     }
 
+    // begin modification
     public void setSubtitle(@Nullable CharSequence subtitle){
         mCollapsingTextHelper.setSubtitle(subtitle);
     }
+    // end modif
 
     /**
      * Returns the title currently being displayed by this view. If the title is not enabled, then

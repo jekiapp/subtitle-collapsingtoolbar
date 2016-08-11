@@ -16,9 +16,21 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_scrollFlags="scroll|exitUntilCollapsed"
-            app:title="Title"
-            app:subtitle="ini subtitle"
+            app:contentScrim="@color/colorAccent"
+            app:collapsedTitleTextAppearance="@style/title.collapsed"
+            app:expandedTitleTextAppearance="@style/title.expanded"
+            app:title="Pendet"
+            app:subtitle="Bali, Indonesia"
+            android:fitsSystemWindows="true"
             >
+            <ImageView
+                android:layout_height="match_parent"
+                android:layout_width="match_parent"
+                android:src="@drawable/pendet_dance"
+                android:adjustViewBounds="true"
+                android:scaleType="centerCrop"
+                app:layout_collapseMode="parallax"
+                />
             <android.support.v7.widget.Toolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
@@ -40,7 +52,7 @@
             android:layout_marginRight="@dimen/activity_horizontal_margin"
             android:layout_marginTop="@dimen/activity_vertical_margin"
             android:layout_marginBottom="@dimen/activity_vertical_margin"
-            android:text="Hello World" />
+            android:text="Pendet is a traditional dance from Bali, Indonesia, in which offerings are made to purify the temple or theater as a prelude to ceremonies or other dances. Pendet is typically performed by young girls, carrying bowls of flower petals, handfuls of which are cast into the air at various times in the dance. Pendet can be thought of as a dance of greeting, to welcome the audience and invite spirits to enjoy a performance." />
     </android.support.v4.widget.NestedScrollView>
 
 </android.support.design.widget.CoordinatorLayout>

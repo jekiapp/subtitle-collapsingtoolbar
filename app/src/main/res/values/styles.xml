@@ -8,4 +8,14 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="title" >
+        <item name="android:textColor">#fff</item>
+    </style>
+
+    <style name="title.expanded">
+        <item name="android:textSize">30dp</item>
+    </style>
+    <style name="title.collapsed">
+        <item name="android:textSize">20dp</item>
+    </style>
 </resources>
