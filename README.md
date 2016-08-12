@@ -1,9 +1,12 @@
 # SubtitleCollapsingToolbarLayout
-this layout is a CollapsingToolbarLayout with subtitle support. Ever wondered how WhatsApp did with their contacts profile activity? this layout is mimicking that behaviour.
+this layout is a CollapsingToolbarLayout with subtitle support. Ever wondered how WhatsApp did with their contacts profile activity? this layout is mimicking that behavior.
 
-<img src="https://dl.dropbox.com/s/tc7y8zspfbxdjrl/collapsing%20toolbar%20layout.gif" height="550" width="300"/>
+<img src="https://dl.dropbox.com/s/tc7y8zspfbxdjrl/collapsing%20toolbar%20layout.gif" height="500" width="300"/>
 
 ## Usage
+Assuming you already knew how to use the standard CollapsingToolbarLayout material. if you never use that before [**this tutorial**](antonioleiva.com/collapsing-toolbar-layout/) have good explanation on how to do it.
+
+first, clone this repo:
 
 `git clone https://github.com/ahmadmuzakki29/subtitle-collapsingtoolbar`
 
@@ -17,7 +20,7 @@ app:expandedSubtitleAppearance="reference"
 ```
 
 
-### Quick snippet : 
+### Quick XML snippet : 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
