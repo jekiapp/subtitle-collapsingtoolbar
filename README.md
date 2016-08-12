@@ -1,7 +1,7 @@
 # SubtitleCollapsingToolbarLayout
 this layout is a CollapsingToolbarLayout with subtitle support. Ever wondered how WhatsApp did with their contacts profile activity? this layout is mimicking that behaviour.
 
-<img src="https://dl.dropbox.com/s/tc7y8zspfbxdjrl/collapsing%20toolbar%20layout.gif" height="600" width="250"/>
+<img src="https://dl.dropbox.com/s/tc7y8zspfbxdjrl/collapsing%20toolbar%20layout.gif" height="550" width="300"/>
 
 ## Usage
 
