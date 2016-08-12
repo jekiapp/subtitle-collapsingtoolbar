@@ -18,4 +18,8 @@
     <style name="title.collapsed">
         <item name="android:textSize">20dp</item>
     </style>
+
+    <style name="subtitle">
+        <item name="android:textColor">#fff</item> <!-- I only change the color -->
+    </style>
 </resources>

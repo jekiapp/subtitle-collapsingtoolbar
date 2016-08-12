@@ -266,18 +266,29 @@ final class CollapsingTextHelper {
     }
 
 // begin modification
-    void setCollapsedSubAppearance(TypedArray style) {
-        mCollapsedSubSize = style.getDimensionPixelSize(
-                R.styleable.SubtitleCollapsingToolbar_collapsedSubtitleSize,(int) mCollapsedSubSize);
-        mCollapsedSubColor = style.getInt(
-                R.styleable.SubtitleCollapsingToolbar_collapsedSubtitleColor, mCollapsedSubColor);
+    void setCollapsedSubAppearance(int resId) {
+        TypedArray a = mView.getContext().obtainStyledAttributes(resId, R.styleable.TextAppearance);
+        if (a.hasValue(R.styleable.TextAppearance_android_textColor)) {
+            mCollapsedSubColor = a.getColor(
+                    R.styleable.TextAppearance_android_textColor, mCollapsedSubColor);
+        }
+        if (a.hasValue(R.styleable.TextAppearance_android_textSize)) {
+            mCollapsedSubSize = a.getDimensionPixelSize(
+                    R.styleable.TextAppearance_android_textSize, (int) mCollapsedSubSize);
+        }
     }
 
-    void setExpandedSubAppearance(TypedArray style) {
-        mExpandedSubSize = style.getDimensionPixelSize(
-                R.styleable.SubtitleCollapsingToolbar_expandedSubtitleSize,(int) mExpandedSubSize);
-        mExpandedSubColor = style.getInt(R.styleable.SubtitleCollapsingToolbar_expandedSubtitleColor,
-                mExpandedSubColor);
+    void setExpandedSubAppearance(int resId) {
+        TypedArray a = mView.getContext().obtainStyledAttributes(resId, R.styleable.TextAppearance);
+        if (a.hasValue(R.styleable.TextAppearance_android_textColor)) {
+            mExpandedSubColor = a.getColor(
+                    R.styleable.TextAppearance_android_textColor, mExpandedSubColor);
+        }
+        if (a.hasValue(R.styleable.TextAppearance_android_textSize)) {
+            mExpandedSubSize = a.getDimensionPixelSize(
+                    R.styleable.TextAppearance_android_textSize, (int) mExpandedSubSize);
+        }
+
     }
 // end modification
 

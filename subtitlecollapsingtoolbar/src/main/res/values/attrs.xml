@@ -2,9 +2,7 @@
 <resources>
     <declare-styleable name="SubtitleCollapsingToolbar">
         <attr name="subtitle" />
-        <attr name="collapsedSubtitleSize" format="dimension"/>
-        <attr name="collapsedSubtitleColor"  format="color"/>
-        <attr name="expandedSubtitleColor" format="color"/>
-        <attr name="expandedSubtitleSize" format="dimension"/>
+        <attr name="collapsedSubtitleAppearance" format="reference"/>
+        <attr name="expandedSubtitleAppearance" format="reference"/>
     </declare-styleable>
 </resources>

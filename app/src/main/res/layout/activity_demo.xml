@@ -19,6 +19,8 @@
             app:contentScrim="@color/colorAccent"
             app:collapsedTitleTextAppearance="@style/title.collapsed"
             app:expandedTitleTextAppearance="@style/title.expanded"
+            app:collapsedSubtitleAppearance="@style/subtitle"
+            app:expandedSubtitleAppearance="@style/subtitle"
             app:title="Pendet"
             app:subtitle="Bali, Indonesia"
             android:fitsSystemWindows="true"

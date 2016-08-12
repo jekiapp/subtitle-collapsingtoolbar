@@ -145,7 +145,7 @@ public class CollapsingToolbarLayout extends FrameLayout {
 
         TypedArray a = context.obtainStyledAttributes(attrs,
                 R.styleable.CollapsingToolbarLayout, defStyleAttr,
-                R.style.SubtitleCollapsingToolbar
+                R.style.Widget_Design_CollapsingToolbar
                 );
 
         mCollapsingTextHelper.setExpandedTextGravity(
@@ -185,18 +185,31 @@ public class CollapsingToolbarLayout extends FrameLayout {
                 R.style.SubtitleCollapsingToolbar);
         if(mStyle.hasValue(R.styleable.SubtitleCollapsingToolbar_subtitle))
             setSubtitle(mStyle.getText(R.styleable.SubtitleCollapsingToolbar_subtitle).toString());
-	// end modification
+
+
+        //load default appearances first
+        mCollapsingTextHelper.setCollapsedSubAppearance(R.style.CollapsedSubtitleAppearance);
+        mCollapsingTextHelper.setExpandedSubAppearance(R.style.ExpandedSubtitleAppearance);
+
+        // now apply custom sub appearance
+        if(mStyle.hasValue(R.styleable.SubtitleCollapsingToolbar_collapsedSubtitleAppearance)){
+            mCollapsingTextHelper.setCollapsedSubAppearance(
+                    mStyle.getResourceId(R.styleable.SubtitleCollapsingToolbar_collapsedSubtitleAppearance,0)
+            );
+        }
+
+        if(mStyle.hasValue(R.styleable.SubtitleCollapsingToolbar_expandedSubtitleAppearance)){
+            mCollapsingTextHelper.setExpandedSubAppearance(
+                    mStyle.getResourceId(R.styleable.SubtitleCollapsingToolbar_expandedSubtitleAppearance,0)
+            );
+        }
+    // end
 
         // First load the default text appearances
         mCollapsingTextHelper.setExpandedTextAppearance(
                 R.style.TextAppearance_Design_CollapsingToolbar_Expanded);
         mCollapsingTextHelper.setCollapsedTextAppearance(
                 R.style.TextAppearance_AppCompat_Widget_ActionBar_Title);
-
-	// begin modification
-        mCollapsingTextHelper.setCollapsedSubAppearance(mStyle);
-        mCollapsingTextHelper.setExpandedSubAppearance(mStyle);
-	// end
 
         // Now overlay any custom text appearances
         if (a.hasValue(R.styleable.CollapsingToolbarLayout_expandedTitleTextAppearance)) {

@@ -2,10 +2,11 @@
 <resources>
     <style name="SubtitleCollapsingToolbar"
         parent="@style/Widget.Design.CollapsingToolbar">
-        <item name="collapsedSubtitleColor">#fff</item>
-        <item name="collapsedSubtitleSize">13dp</item>
-        <item name="expandedSubtitleColor">#fff</item>
-        <item name="expandedSubtitleSize">20dp</item>
     </style>
-    <style name="ActionBar.Title" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"/>
+    <style name="CollapsedSubtitleAppearance" parent="TextAppearance.AppCompat">
+        <item name="android:textSize">13sp</item>
+    </style>
+    <style name="ExpandedSubtitleAppearance" parent="TextAppearance.AppCompat">
+        <item name="android:textSize">20sp</item>
+    </style>
 </resources>
