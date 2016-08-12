@@ -3,9 +3,9 @@ This layout is a *CollapsingToolbarLayout* with subtitle support. Ever wondered 
 
 ![Subtitle Collapsing Toolbar Layout](https://github.com/ahmadmuzakki29/subtitle-collapsingtoolbar/raw/master/demo.gif)
 
-## Usage
 Assuming you already knew how to use the standard CollapsingToolbarLayout material. if you never use that before [**this tutorial**](antonioleiva.com/collapsing-toolbar-layout/) have good explanation on how to do it.
 
+## Usage
 first, clone this repo:
 
 `git clone https://github.com/ahmadmuzakki29/subtitle-collapsingtoolbar`
