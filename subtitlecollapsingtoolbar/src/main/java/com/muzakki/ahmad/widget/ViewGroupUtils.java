@@ -23,28 +23,6 @@ import android.view.ViewGroup;
 
 class ViewGroupUtils {
 
-    private interface ViewGroupUtilsImpl {
-        void offsetDescendantRect(ViewGroup parent, View child, Rect rect);
-    }
-
-    private static class ViewGroupUtilsImplBase implements ViewGroupUtilsImpl {
-        @Override
-        public void offsetDescendantRect(ViewGroup parent, View child, Rect rect) {
-            parent.offsetDescendantRectToMyCoords(child, rect);
-            // View#offsetDescendantRectToMyCoords includes scroll offsets of the last child.
-            // We need to reverse it here so that we get the rect of the view itself rather
-            // than its content.
-            rect.offset(child.getScrollX(), child.getScrollY());
-        }
-    }
-
-    private static class ViewGroupUtilsImplHoneycomb implements ViewGroupUtilsImpl {
-        @Override
-        public void offsetDescendantRect(ViewGroup parent, View child, Rect rect) {
-            ViewGroupUtilsHoneycomb.offsetDescendantRect(parent, child, rect);
-        }
-    }
-
     private static final ViewGroupUtilsImpl IMPL;
 
     static {
@@ -58,7 +36,7 @@ class ViewGroupUtils {
 
     /**
      * This is a port of the common
-     * {@link ViewGroup#offsetDescendantRectToMyCoords(View, Rect)}
+     * {@link ViewGroup#offsetDescendantRectToMyCoords(android.view.View, android.graphics.Rect)}
      * from the framework, but adapted to take transformations into account. The result
      * will be the bounding rect of the real transformed rect.
      *
@@ -79,6 +57,34 @@ class ViewGroupUtils {
     static void getDescendantRect(ViewGroup parent, View descendant, Rect out) {
         out.set(0, 0, descendant.getWidth(), descendant.getHeight());
         offsetDescendantRect(parent, descendant, out);
+    }
+
+    private interface ViewGroupUtilsImpl {
+        void offsetDescendantRect(ViewGroup parent, View child, Rect rect);
+    }
+
+    private static class ViewGroupUtilsImplBase implements ViewGroupUtilsImpl {
+        ViewGroupUtilsImplBase() {
+        }
+
+        @Override
+        public void offsetDescendantRect(ViewGroup parent, View child, Rect rect) {
+            parent.offsetDescendantRectToMyCoords(child, rect);
+            // View#offsetDescendantRectToMyCoords includes scroll offsets of the last child.
+            // We need to reverse it here so that we get the rect of the view itself rather
+            // than its content.
+            rect.offset(child.getScrollX(), child.getScrollY());
+        }
+    }
+
+    private static class ViewGroupUtilsImplHoneycomb implements ViewGroupUtilsImpl {
+        ViewGroupUtilsImplHoneycomb() {
+        }
+
+        @Override
+        public void offsetDescendantRect(ViewGroup parent, View child, Rect rect) {
+            ViewGroupUtilsHoneycomb.offsetDescendantRect(parent, child, rect);
+        }
     }
 
 }
