@@ -25,7 +25,6 @@ import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.*;
-import android.support.design.R;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
@@ -171,6 +170,32 @@ public class CollapsingToolbarLayout extends FrameLayout {
         mCollapsingTitleEnabled = a.getBoolean(
                 R.styleable.CollapsingToolbarLayout_titleEnabled, true);
         setTitle(a.getText(R.styleable.CollapsingToolbarLayout_title));
+
+	// begin modification
+        TypedArray mStyle = context.obtainStyledAttributes(attrs,
+                R.styleable.SubtitleCollapsingToolbar, defStyleAttr,
+                R.style.SubtitleCollapsingToolbar);
+        if(mStyle.hasValue(R.styleable.SubtitleCollapsingToolbar_subtitle))
+            setSubtitle(mStyle.getText(R.styleable.SubtitleCollapsingToolbar_subtitle).toString());
+
+
+        //load default appearances first
+        mCollapsingTextHelper.setCollapsedSubAppearance(R.style.CollapsedSubtitleAppearance);
+        mCollapsingTextHelper.setExpandedSubAppearance(R.style.ExpandedSubtitleAppearance);
+
+        // now apply custom sub appearance
+        if(mStyle.hasValue(R.styleable.SubtitleCollapsingToolbar_collapsedSubtitleAppearance)){
+            mCollapsingTextHelper.setCollapsedSubAppearance(
+                    mStyle.getResourceId(R.styleable.SubtitleCollapsingToolbar_collapsedSubtitleAppearance,0)
+            );
+        }
+
+        if(mStyle.hasValue(R.styleable.SubtitleCollapsingToolbar_expandedSubtitleAppearance)){
+            mCollapsingTextHelper.setExpandedSubAppearance(
+                    mStyle.getResourceId(R.styleable.SubtitleCollapsingToolbar_expandedSubtitleAppearance,0)
+            );
+        }
+    // end
 
         // First load the default text appearances
         mCollapsingTextHelper.setExpandedTextAppearance(
@@ -517,6 +542,12 @@ public class CollapsingToolbarLayout extends FrameLayout {
     public void setTitle(@Nullable CharSequence title) {
         mCollapsingTextHelper.setText(title);
     }
+
+    // begin modification
+    public void setSubtitle(@Nullable CharSequence subtitle){
+        mCollapsingTextHelper.setSubtitle(subtitle);
+    }
+    // end modif
 
     /**
      * Returns whether this view is currently displaying its own title.

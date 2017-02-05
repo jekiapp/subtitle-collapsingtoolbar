@@ -22,7 +22,6 @@ import android.graphics.*;
 import android.os.Build;
 import android.support.annotation.ColorInt;
 import android.support.v4.text.TextDirectionHeuristicsCompat;
-import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.TintTypedArray;
 import android.text.TextPaint;
@@ -90,10 +89,23 @@ final class CollapsingTextHelper {
     private float mExpandedShadowRadius, mExpandedShadowDx, mExpandedShadowDy;
     private int mExpandedShadowColor;
 
+    private CharSequence mSub = "Testing";
+    private float mSubScale;
+    private float mExpandedSubSize = 50;
+    private int mCollapsedSubColor;
+    private int mExpandedSubColor;
+    private TextPaint mSubPaint;
+    private float mCurrentSubSize;
+    private float mCollapsedSubSize = 25;
+    private float mCollapsedSubY;
+    private float mExpandedSubY;
+    private float mCurrentSubY;
+
     public CollapsingTextHelper(View view) {
         mView = view;
 
         mTextPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG | Paint.SUBPIXEL_TEXT_FLAG);
+        mSubPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG | Paint.SUBPIXEL_TEXT_FLAG); // modification
 
         mCollapsedBounds = new Rect();
         mExpandedBounds = new Rect();
@@ -246,6 +258,51 @@ final class CollapsingTextHelper {
         recalculate();
     }
 
+    void setCollapsedSubAppearance(int resId) {
+        TintTypedArray a = TintTypedArray.obtainStyledAttributes(mView.getContext(), resId,
+                android.support.v7.appcompat.R.styleable.TextAppearance);
+        if (a.hasValue(android.support.v7.appcompat.R.styleable.TextAppearance_android_textColor)) {
+            mCollapsedTextColor = a.getColorStateList(
+                    android.support.v7.appcompat.R.styleable.TextAppearance_android_textColor);
+        }
+        if (a.hasValue(android.support.v7.appcompat.R.styleable.TextAppearance_android_textSize)) {
+            mCollapsedTextSize = a.getDimensionPixelSize(
+                    android.support.v7.appcompat.R.styleable.TextAppearance_android_textSize,
+                    (int) mCollapsedTextSize);
+        }
+        mCollapsedShadowColor = a.getInt(
+                android.support.v7.appcompat.R.styleable.TextAppearance_android_shadowColor, 0);
+        mCollapsedShadowDx = a.getFloat(
+                android.support.v7.appcompat.R.styleable.TextAppearance_android_shadowDx, 0);
+        mCollapsedShadowDy = a.getFloat(
+                android.support.v7.appcompat.R.styleable.TextAppearance_android_shadowDy, 0);
+        mCollapsedShadowRadius = a.getFloat(
+                android.support.v7.appcompat.R.styleable.TextAppearance_android_shadowRadius, 0);
+        a.recycle();
+
+        if (Build.VERSION.SDK_INT >= 16) {
+            mCollapsedTypeface = readFontFamilyTypeface(resId);
+        }
+
+        recalculate();
+    }
+
+    void setExpandedSubAppearance(int resId) {
+        TintTypedArray a = TintTypedArray.obtainStyledAttributes(mView.getContext(), resId,
+                android.support.v7.appcompat.R.styleable.TextAppearance);
+        if (a.hasValue(android.support.v7.appcompat.R.styleable.TextAppearance_android_textColor)) {
+            mExpandedSubColor = a.getColor(
+                    android.support.v7.appcompat.R.styleable.TextAppearance_android_textColor,mCollapsedSubColor);
+        }
+        if (a.hasValue(android.support.v7.appcompat.R.styleable.TextAppearance_android_textSize)) {
+            mExpandedSubSize = a.getDimensionPixelSize(
+                    android.support.v7.appcompat.R.styleable.TextAppearance_android_textSize,
+                    (int) mExpandedSubSize);
+        }
+
+        recalculate();
+    }
+
     private Typeface readFontFamilyTypeface(int resId) {
         final TypedArray a = mView.getContext().obtainStyledAttributes(resId,
                 new int[]{android.R.attr.fontFamily});
@@ -356,8 +413,18 @@ final class CollapsingTextHelper {
         mCurrentDrawY = lerp(mExpandedDrawY, mCollapsedDrawY, fraction,
                 mPositionInterpolator);
 
+// begin modification
+        mCurrentSubY = lerp(mExpandedSubY, mCollapsedSubY, fraction,
+                mPositionInterpolator);
+// end modification
+
         setInterpolatedTextSize(lerp(mExpandedTextSize, mCollapsedTextSize,
                 fraction, mTextSizeInterpolator));
+
+// begin modification
+        setInterpolatedSubSize(lerp(mExpandedSubSize, mCollapsedSubSize,
+                fraction, mTextSizeInterpolator));
+// end modification
 
         if (mCollapsedTextColor != mExpandedTextColor) {
             // If the collapsed and expanded text colors are different, blend them based on the
@@ -367,6 +434,16 @@ final class CollapsingTextHelper {
         } else {
             mTextPaint.setColor(getCurrentCollapsedTextColor());
         }
+
+/*// begin modification TODO CHANGE THIS
+        if (mCollapsedSubColor != mExpandedSubColor) {
+            // If the collapsed and expanded text colors are different, blend them based on the
+            // fraction
+            mSubPaint.setColor(blendColors(mExpandedSubColor, mCollapsedSubColor, fraction));
+        } else {
+            mSubPaint.setColor(mCollapsedSubColor);
+        }
+// end*/
 
         mTextPaint.setShadowLayer(
                 lerp(mExpandedShadowRadius, mCollapsedShadowRadius, fraction, null),
@@ -400,74 +477,44 @@ final class CollapsingTextHelper {
 
         // We then calculate the collapsed text size, using the same logic
         calculateUsingTextSize(mCollapsedTextSize);
-        float width = mTextToDraw != null ?
-                mTextPaint.measureText(mTextToDraw, 0, mTextToDraw.length()) : 0;
-        final int collapsedAbsGravity = GravityCompat.getAbsoluteGravity(mCollapsedTextGravity,
-                mIsRtl ? ViewCompat.LAYOUT_DIRECTION_RTL : ViewCompat.LAYOUT_DIRECTION_LTR);
-        switch (collapsedAbsGravity & Gravity.VERTICAL_GRAVITY_MASK) {
-            case Gravity.BOTTOM:
-                mCollapsedDrawY = mCollapsedBounds.bottom;
-                break;
-            case Gravity.TOP:
-                mCollapsedDrawY = mCollapsedBounds.top - mTextPaint.ascent();
-                break;
-            case Gravity.CENTER_VERTICAL:
-            default:
-                float textHeight = mTextPaint.descent() - mTextPaint.ascent();
-                float textOffset = (textHeight / 2) - mTextPaint.descent();
-                mCollapsedDrawY = mCollapsedBounds.centerY() + textOffset;
-                break;
+        calculateUsingSubSize(mCollapsedSubSize);
+
+        float textHeight = mTextPaint.descent() - mTextPaint.ascent();
+        float textOffset = (textHeight / 2);
+        if(mSub!=null){
+            float subHeight = mSubPaint.descent() - mSubPaint.ascent();
+            float subOffset = (subHeight / 2) - mSubPaint.descent();
+            float offset = ((mCollapsedBounds.height()-(textHeight+subHeight))/3);
+
+            mCollapsedDrawY = mCollapsedBounds.top+offset-mTextPaint.ascent();
+            mCollapsedSubY = mCollapsedBounds.top+(offset*2)+textHeight-mSubPaint.ascent();
+        }else { // title only
+            mCollapsedDrawY = mCollapsedBounds.centerY() + textOffset;
         }
-        switch (collapsedAbsGravity & GravityCompat.RELATIVE_HORIZONTAL_GRAVITY_MASK) {
-            case Gravity.CENTER_HORIZONTAL:
-                mCollapsedDrawX = mCollapsedBounds.centerX() - (width / 2);
-                break;
-            case Gravity.RIGHT:
-                mCollapsedDrawX = mCollapsedBounds.right - width;
-                break;
-            case Gravity.LEFT:
-            default:
-                mCollapsedDrawX = mCollapsedBounds.left;
-                break;
-        }
+        mCollapsedDrawX = mCollapsedBounds.left;
 
         calculateUsingTextSize(mExpandedTextSize);
-        width = mTextToDraw != null
-                ? mTextPaint.measureText(mTextToDraw, 0, mTextToDraw.length()) : 0;
-        final int expandedAbsGravity = GravityCompat.getAbsoluteGravity(mExpandedTextGravity,
-                mIsRtl ? ViewCompat.LAYOUT_DIRECTION_RTL : ViewCompat.LAYOUT_DIRECTION_LTR);
-        switch (expandedAbsGravity & Gravity.VERTICAL_GRAVITY_MASK) {
-            case Gravity.BOTTOM:
-                mExpandedDrawY = mExpandedBounds.bottom;
-                break;
-            case Gravity.TOP:
-                mExpandedDrawY = mExpandedBounds.top - mTextPaint.ascent();
-                break;
-            case Gravity.CENTER_VERTICAL:
-            default:
-                float textHeight = mTextPaint.descent() - mTextPaint.ascent();
-                float textOffset = (textHeight / 2) - mTextPaint.descent();
-                mExpandedDrawY = mExpandedBounds.centerY() + textOffset;
-                break;
+        calculateUsingSubSize(mExpandedSubSize);
+
+        textHeight = mTextPaint.descent() - mTextPaint.ascent();
+        textOffset = (textHeight / 2);
+        if(mSub!=null){
+            float subHeight = mSubPaint.descent() - mSubPaint.ascent();
+            float subOffset = (subHeight / 2);
+
+            mExpandedDrawY = mExpandedBounds.centerY() + textOffset;
+            mExpandedSubY = mExpandedDrawY+subOffset-mSubPaint.ascent();
+        }else { // title only
+            mExpandedDrawY = mExpandedBounds.centerY() + textOffset;
         }
-        switch (expandedAbsGravity & GravityCompat.RELATIVE_HORIZONTAL_GRAVITY_MASK) {
-            case Gravity.CENTER_HORIZONTAL:
-                mExpandedDrawX = mExpandedBounds.centerX() - (width / 2);
-                break;
-            case Gravity.RIGHT:
-                mExpandedDrawX = mExpandedBounds.right - width;
-                break;
-            case Gravity.LEFT:
-            default:
-                mExpandedDrawX = mExpandedBounds.left;
-                break;
-        }
+        mExpandedDrawX = mExpandedBounds.left;
 
         // The bounds have changed so we need to clear the texture
         clearTexture();
         // Now reset the text size back to the original
         setInterpolatedTextSize(currentTextSize);
     }
+//end modification
 
     private void interpolateBounds(float fraction) {
         mCurrentBounds.left = lerp(mExpandedBounds.left, mCollapsedBounds.left,
@@ -486,7 +533,7 @@ final class CollapsingTextHelper {
         if (mTextToDraw != null && mDrawTitle) {
             float x = mCurrentDrawX;
             float y = mCurrentDrawY;
-
+            float subY = mCurrentSubY;
             final boolean drawTexture = mUseTexture && mExpandedTitleTexture != null;
 
             final float ascent;
@@ -508,6 +555,18 @@ final class CollapsingTextHelper {
             if (drawTexture) {
                 y += ascent;
             }
+
+// begin modification
+// draw subtitle
+            final int saveCountSub = canvas.save();
+            if(mSub!=null) {
+                if (mSubScale != 1f) {
+                    canvas.scale(mSubScale, mSubScale, x, subY);
+                }
+                canvas.drawText(mSub, 0, mSub.length(), x, subY, mSubPaint);
+                canvas.restoreToCount(saveCountSub);
+            }
+// end modification
 
             if (mScale != 1f) {
                 canvas.scale(mScale, mScale, x, y);
@@ -545,6 +604,14 @@ final class CollapsingTextHelper {
 
         ViewCompat.postInvalidateOnAnimation(mView);
     }
+
+// begin modification
+    private void setInterpolatedSubSize(float textSize) {
+        calculateUsingSubSize(textSize);
+
+        ViewCompat.postInvalidateOnAnimation(mView);
+    }
+// end modif
 
     private void calculateUsingTextSize(final float textSize) {
         if (mText == null) return;
@@ -616,6 +683,60 @@ final class CollapsingTextHelper {
         }
     }
 
+    private void calculateUsingSubSize(final float subSize) {
+        if (mSub==null) return;
+
+        final float collapsedWidth = mCollapsedBounds.width();
+        final float expandedWidth = mExpandedBounds.width();
+
+        final float availableWidth;
+        final float newSubSize;
+        boolean updateDrawText = false;
+
+        if (isClose(subSize, mCollapsedSubSize)) {
+            newSubSize = mCollapsedSubSize;
+            mSubScale = 1f;
+            availableWidth = collapsedWidth;
+        } else {
+            newSubSize = mExpandedSubSize;
+            if (isClose(subSize, mExpandedSubSize)) {
+                // If we're close to the expanded text size, snap to it and use a scale of 1
+                mSubScale = 1f;
+            } else {
+                // Else, we'll scale down from the expanded text size
+                mSubScale = subSize / mExpandedSubSize;
+            }
+
+            final float subSizeRatio = mCollapsedSubSize / mExpandedSubSize;
+            // This is the size of the expanded bounds when it is scaled to match the
+            // collapsed text size
+            final float scaledDownWidth = expandedWidth * subSizeRatio;
+
+            if (scaledDownWidth > collapsedWidth) {
+                // If the scaled down size is larger than the actual collapsed width, we need to
+                // cap the available width so that when the expanded text scales down, it matches
+                // the collapsed width
+                availableWidth = Math.min(collapsedWidth / subSizeRatio, expandedWidth);
+            } else {
+                // Otherwise we'll just use the expanded width
+                availableWidth = expandedWidth;
+            }
+        }
+
+        if (availableWidth > 0) {
+            updateDrawText = (mCurrentSubSize != newSubSize) || mBoundsChanged || updateDrawText;
+            mCurrentSubSize = newSubSize;
+            mBoundsChanged = false;
+        }
+
+        if (updateDrawText) {
+            mSubPaint.setTextSize(mCurrentSubSize);
+            mSubPaint.setTypeface(mCurrentTypeface);
+            // Use linear text scaling if we're scaling the canvas
+            mSubPaint.setLinearText(mSubScale != 1f);
+        }
+    }
+
     private void ensureExpandedTexture() {
         if (mExpandedTitleTexture != null || mExpandedBounds.isEmpty()
                 || TextUtils.isEmpty(mTextToDraw)) {
@@ -670,6 +791,16 @@ final class CollapsingTextHelper {
             recalculate();
         }
     }
+
+// begin modification
+    void setSubtitle(CharSequence text){
+        if (text == null || !text.equals(mSub)) {
+            mSub = text;
+            clearTexture();
+            recalculate();
+        }
+    }
+// end modif
 
     private void clearTexture() {
         if (mExpandedTitleTexture != null) {
