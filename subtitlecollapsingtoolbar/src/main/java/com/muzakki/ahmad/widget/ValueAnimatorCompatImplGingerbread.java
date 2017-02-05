@@ -22,28 +22,32 @@ import android.os.SystemClock;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Interpolator;
 
+import java.util.ArrayList;
+
 /**
  * A 'fake' ValueAnimator implementation which uses a Runnable.
  */
-class ValueAnimatorCompatImplEclairMr1 extends ValueAnimatorCompat.Impl {
+class ValueAnimatorCompatImplGingerbread extends ValueAnimatorCompat.Impl {
 
     private static final int HANDLER_DELAY = 10;
     private static final int DEFAULT_DURATION = 200;
 
     private static final Handler sHandler = new Handler(Looper.getMainLooper());
-
-    private long mStartTime;
-    private boolean mIsRunning;
-
     private final int[] mIntValues = new int[2];
     private final float[] mFloatValues = new float[2];
-
-    private int mDuration = DEFAULT_DURATION;
-    private Interpolator mInterpolator;
-    private AnimatorListenerProxy mListener;
-    private AnimatorUpdateListenerProxy mUpdateListener;
-
+    private long mStartTime;
+    private boolean mIsRunning;
     private float mAnimatedFraction;
+    private long mDuration = DEFAULT_DURATION;
+    private Interpolator mInterpolator;
+    private ArrayList<AnimatorListenerProxy> mListeners;
+    private ArrayList<AnimatorUpdateListenerProxy> mUpdateListeners;
+
+    private final Runnable mRunnable = new Runnable() {
+        public void run() {
+            update();
+        }
+    };
 
     @Override
     public void start() {
@@ -51,18 +55,22 @@ class ValueAnimatorCompatImplEclairMr1 extends ValueAnimatorCompat.Impl {
             // If we're already running, ignore
             return;
         }
-
         if (mInterpolator == null) {
             mInterpolator = new AccelerateDecelerateInterpolator();
         }
-
-        mStartTime = SystemClock.uptimeMillis();
         mIsRunning = true;
 
-        if (mListener != null) {
-            mListener.onAnimationStart();
-        }
+        // Reset the animated fraction
+        mAnimatedFraction = 0f;
 
+        startInternal();
+    }
+
+    final void startInternal() {
+        mStartTime = SystemClock.uptimeMillis();
+        dispatchAnimationUpdate();
+        dispatchAnimationStart();
+        // Now start our animation ticker
         sHandler.postDelayed(mRunnable, HANDLER_DELAY);
     }
 
@@ -77,13 +85,19 @@ class ValueAnimatorCompatImplEclairMr1 extends ValueAnimatorCompat.Impl {
     }
 
     @Override
-    public void setListener(AnimatorListenerProxy listener) {
-        mListener = listener;
+    public void addListener(AnimatorListenerProxy listener) {
+        if (mListeners == null) {
+            mListeners = new ArrayList<>();
+        }
+        mListeners.add(listener);
     }
 
     @Override
-    public void setUpdateListener(AnimatorUpdateListenerProxy updateListener) {
-        mUpdateListener = updateListener;
+    public void addUpdateListener(AnimatorUpdateListenerProxy updateListener) {
+        if (mUpdateListeners == null) {
+            mUpdateListeners = new ArrayList<>();
+        }
+        mUpdateListeners.add(updateListener);
     }
 
     @Override
@@ -109,18 +123,12 @@ class ValueAnimatorCompatImplEclairMr1 extends ValueAnimatorCompat.Impl {
     }
 
     @Override
-    public void setDuration(int duration) {
-        mDuration = duration;
-    }
-
-    @Override
     public void cancel() {
         mIsRunning = false;
         sHandler.removeCallbacks(mRunnable);
 
-        if (mListener != null) {
-            mListener.onAnimationCancel();
-        }
+        dispatchAnimationCancel();
+        dispatchAnimationEnd();
     }
 
     @Override
@@ -133,17 +141,10 @@ class ValueAnimatorCompatImplEclairMr1 extends ValueAnimatorCompat.Impl {
         if (mIsRunning) {
             mIsRunning = false;
             sHandler.removeCallbacks(mRunnable);
-
             // Set our animated fraction to 1
             mAnimatedFraction = 1f;
-
-            if (mUpdateListener != null) {
-                mUpdateListener.onAnimationUpdate();
-            }
-
-            if (mListener != null) {
-                mListener.onAnimationEnd();
-            }
+            dispatchAnimationUpdate();
+            dispatchAnimationEnd();
         }
     }
 
@@ -152,27 +153,28 @@ class ValueAnimatorCompatImplEclairMr1 extends ValueAnimatorCompat.Impl {
         return mDuration;
     }
 
-    private void update() {
+    @Override
+    public void setDuration(long duration) {
+        mDuration = duration;
+    }
+
+    final void update() {
         if (mIsRunning) {
             // Update the animated fraction
             final long elapsed = SystemClock.uptimeMillis() - mStartTime;
-            final float linearFraction = elapsed / (float) mDuration;
+            final float linearFraction = MathUtils.constrain(elapsed / (float) mDuration, 0f, 1f);
             mAnimatedFraction = mInterpolator != null
                     ? mInterpolator.getInterpolation(linearFraction)
                     : linearFraction;
 
-            // If we're running, dispatch tp the listener
-            if (mUpdateListener != null) {
-                mUpdateListener.onAnimationUpdate();
-            }
+            // If we're running, dispatch to the update listeners
+            dispatchAnimationUpdate();
 
             // Check to see if we've passed the animation duration
             if (SystemClock.uptimeMillis() >= (mStartTime + mDuration)) {
                 mIsRunning = false;
 
-                if (mListener != null) {
-                    mListener.onAnimationEnd();
-                }
+                dispatchAnimationEnd();
             }
         }
 
@@ -182,9 +184,35 @@ class ValueAnimatorCompatImplEclairMr1 extends ValueAnimatorCompat.Impl {
         }
     }
 
-    private final Runnable mRunnable = new Runnable() {
-        public void run() {
-            update();
+    private void dispatchAnimationUpdate() {
+        if (mUpdateListeners != null) {
+            for (int i = 0, count = mUpdateListeners.size(); i < count; i++) {
+                mUpdateListeners.get(i).onAnimationUpdate();
+            }
         }
-    };
+    }
+
+    private void dispatchAnimationStart() {
+        if (mListeners != null) {
+            for (int i = 0, count = mListeners.size(); i < count; i++) {
+                mListeners.get(i).onAnimationStart();
+            }
+        }
+    }
+
+    private void dispatchAnimationCancel() {
+        if (mListeners != null) {
+            for (int i = 0, count = mListeners.size(); i < count; i++) {
+                mListeners.get(i).onAnimationCancel();
+            }
+        }
+    }
+
+    private void dispatchAnimationEnd() {
+        if (mListeners != null) {
+            for (int i = 0, count = mListeners.size(); i < count; i++) {
+                mListeners.get(i).onAnimationEnd();
+            }
+        }
+    }
 }

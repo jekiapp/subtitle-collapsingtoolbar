@@ -16,8 +16,8 @@
 
 package com.muzakki.ahmad.widget;
 
+import android.graphics.PorterDuff;
 import android.os.Build;
-import android.view.View;
 
 class ViewUtils {
 
@@ -27,45 +27,33 @@ class ViewUtils {
         public ValueAnimatorCompat createAnimator() {
             return new ValueAnimatorCompat(Build.VERSION.SDK_INT >= 12
                     ? new ValueAnimatorCompatImplHoneycombMr1()
-                    : new ValueAnimatorCompatImplEclairMr1());
+                    : new ValueAnimatorCompatImplGingerbread());
         }
     };
 
-    private interface ViewUtilsImpl {
-        void setBoundsViewOutlineProvider(View view);
-    }
-
-    private static class ViewUtilsImplBase implements ViewUtilsImpl {
-        @Override
-        public void setBoundsViewOutlineProvider(View view) {
-            // no-op
-        }
-    }
-
-    private static class ViewUtilsImplLollipop implements ViewUtilsImpl {
-        @Override
-        public void setBoundsViewOutlineProvider(View view) {
-            ViewUtilsLollipop.setBoundsViewOutlineProvider(view);
-        }
-    }
-
-    private static final ViewUtilsImpl IMPL;
-
-    static {
-        final int version = Build.VERSION.SDK_INT;
-        if (version >= 21) {
-            IMPL = new ViewUtilsImplLollipop();
-        } else {
-            IMPL = new ViewUtilsImplBase();
-        }
-    }
-
-    static void setBoundsViewOutlineProvider(View view) {
-        IMPL.setBoundsViewOutlineProvider(view);
-    }
-
     static ValueAnimatorCompat createAnimator() {
         return DEFAULT_ANIMATOR_CREATOR.createAnimator();
+    }
+
+    static boolean objectEquals(Object a, Object b) {
+        return (a == b) || (a != null && a.equals(b));
+    }
+
+    static PorterDuff.Mode parseTintMode(int value, PorterDuff.Mode defaultMode) {
+        switch (value) {
+            case 3:
+                return PorterDuff.Mode.SRC_OVER;
+            case 5:
+                return PorterDuff.Mode.SRC_IN;
+            case 9:
+                return PorterDuff.Mode.SRC_ATOP;
+            case 14:
+                return PorterDuff.Mode.MULTIPLY;
+            case 15:
+                return PorterDuff.Mode.SCREEN;
+            default:
+                return defaultMode;
+        }
     }
 
 }
